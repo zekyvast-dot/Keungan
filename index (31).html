@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Quest RPG</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Overlay untuk mobile sidebar -->
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                        <path d="M2 17l10 5 10-5"/>
+                        <path d="M2 12l10 5 10-5"/>
+                    </svg>
+                </div>
+                <span class="logo-text">Life Quest</span>
+            </div>
+            <button id="closeSidebar" class="close-sidebar">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" data-page="dashboard">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"/>
+                    <rect x="14" y="3" width="7" height="7"/>
+                    <rect x="14" y="14" width="7" height="7"/>
+                    <rect x="3" y="14" width="7" height="7"/>
+                </svg>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item" data-page="roadmap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <span>Roadmap</span>
+            </a>
+            <a href="#" class="nav-item" data-page="missions">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+                <span>Misi</span>
+            </a>
+            <a href="#" class="nav-item" data-page="schedule">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                <span>Jadwal</span>
+            </a>
+            <a href="#" class="nav-item" data-page="stats">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="20" x2="18" y2="10"/>
+                    <line x1="12" y1="20" x2="12" y2="4"/>
+                    <line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+                <span>Statistik</span>
+            </a>
+            <a href="#" class="nav-item" data-page="achievements">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="8" r="7"/>
+                    <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>
+                </svg>
+                <span>Prestasi</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="#" class="nav-item" data-page="settings">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+                </svg>
+                <span>Pengaturan</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <button id="menuToggle" class="menu-toggle">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="12" x2="21" y2="12"/>
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
+            </button>
+            <div class="top-bar-title" id="pageTitle">Dashboard</div>
+            <div class="top-bar-actions">
+                <div class="xp-badge">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                    <span id="headerXP">0 XP</span>
+                </div>
+                <div class="level-badge">
+                    <span>LVL</span>
+                    <span id="headerLevel">1</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Pages Container -->
+        <div id="pagesContainer" class="pages-container">
+            
+            <!-- DASHBOARD PAGE -->
+            <div id="page-dashboard" class="page active">
+                <div class="dashboard-hero">
+                    <div class="hero-content">
+                        <h1 class="hero-greeting">Selamat datang kembali, <span id="heroName">Petualang</span></h1>
+                        <p class="hero-subtitle">Perjalanan hidupmu sedang berlangsung. Tetap konsisten!</p>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="hero-stat">
+                            <span class="hero-stat-label">Umur</span>
+                            <span class="hero-stat-value" id="heroAge">17</span>
+                        </div>
+                        <div class="hero-stat">
+                            <span class="hero-stat-label">Level</span>
+                            <span class="hero-stat-value" id="heroLevel">1</span>
+                        </div>
+                        <div class="hero-stat">
+                            <span class="hero-stat-label">Streak</span>
+                            <span class="hero-stat-value" id="heroStreak">0 hari</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <!-- XP Card -->
+                    <div class="dashboard-card xp-card">
+                        <div class="card-header">
+                            <h3>XP Progress</h3>
+                            <span class="card-badge" id="xpBadge">Level 1</span>
+                        </div>
+                        <div class="xp-ring">
+                            <svg class="xp-ring-svg" viewBox="0 0 120 120">
+                                <circle class="xp-ring-bg" cx="60" cy="60" r="52"/>
+                                <circle class="xp-ring-progress" id="xpRingProgress" cx="60" cy="60" r="52"/>
+                            </svg>
+                            <div class="xp-ring-text">
+                                <span class="xp-ring-value" id="xpRingValue">0</span>
+                                <span class="xp-ring-label">XP</span>
+                            </div>
+                        </div>
+                        <div class="xp-info">
+                            <span id="xpCurrent">0</span> / <span id="xpNeeded">100</span> XP
+                        </div>
+                    </div>
+
+                    <!-- Overall Progress -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>Progress Keseluruhan</h3>
+                        </div>
+                        <div class="progress-circle-container">
+                            <div class="progress-circle" id="overallProgress">
+                                <span class="progress-circle-value" id="overallProgressValue">0%</span>
+                            </div>
+                        </div>
+                        <div class="progress-detail">
+                            <div class="progress-detail-item">
+                                <span class="progress-detail-dot" style="background: var(--accent-primary)"></span>
+                                <span>Selesai</span>
+                                <span id="tasksCompletedCount">0</span>
+                            </div>
+                            <div class="progress-detail-item">
+                                <span class="progress-detail-dot" style="background: var(--border-color)"></span>
+                                <span>Total</span>
+                                <span id="tasksTotalCount">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Today's Missions -->
+                    <div class="dashboard-card missions-card">
+                        <div class="card-header">
+                            <h3>Misi Hari Ini</h3>
+                            <span class="card-badge accent" id="todayDate"></span>
+                        </div>
+                        <div class="mission-list" id="todayMissionsList">
+                            <div class="empty-state">
+                                <p>Belum ada misi untuk hari ini</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active Roadmap -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>Roadmap Aktif</h3>
+                        </div>
+                        <div class="active-roadmap" id="activeRoadmap">
+                            <div class="empty-state">
+                                <p>Belum ada roadmap aktif</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Stats -->
+                    <div class="dashboard-card stats-mini">
+                        <div class="card-header">
+                            <h3>Ringkasan Cepat</h3>
+                        </div>
+                        <div class="mini-stats-grid">
+                            <div class="mini-stat">
+                                <div class="mini-stat-icon" style="background: rgba(99, 102, 241, 0.15); color: var(--accent-primary)">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                                        <polyline points="22 4 12 14.01 9 11.01"/>
+                                    </svg>
+                                </div>
+                                <div class="mini-stat-info">
+                                    <span class="mini-stat-value" id="miniCompleted">0</span>
+                                    <span class="mini-stat-label">Tugas Selesai</span>
+                                </div>
+                            </div>
+                            <div class="mini-stat">
+                                <div class="mini-stat-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--success)">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                    </svg>
+                                </div>
+                                <div class="mini-stat-info">
+                                    <span class="mini-stat-value" id="miniXP">0</span>
+                                    <span class="mini-stat-label">Total XP</span>
+                                </div>
+                            </div>
+                            <div class="mini-stat">
+                                <div class="mini-stat-icon" style="background: rgba(245, 158, 11, 0.15); color: var(--warning)">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                                    </svg>
+                                </div>
+                                <div class="mini-stat-info">
+                                    <span class="mini-stat-value" id="miniStreak">0</span>
+                                    <span class="mini-stat-label">Streak Hari</span>
+                                </div>
+                            </div>
+                            <div class="mini-stat">
+                                <div class="mini-stat-icon" style="background: rgba(236, 72, 153, 0.15); color: var(--danger)">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                    </svg>
+                                </div>
+                                <div class="mini-stat-info">
+                                    <span class="mini-stat-value" id="miniAchievements">0</span>
+                                    <span class="mini-stat-label">Prestasi</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROADMAP PAGE -->
+            <div id="page-roadmap" class="page">
+                <div class="page-header">
+                    <h2>Roadmap Perjalanan Hidup</h2>
+                    <p>Rencanakan setiap langkah menuju masa depanmu</p>
+                </div>
+                <div class="roadmap-container" id="roadmapContainer">
+                    <!-- Roadmap items akan dirender di sini -->
+                </div>
+            </div>
+
+            <!-- MISSIONS PAGE -->
+            <div id="page-missions" class="page">
+                <div class="page-header">
+                    <h2>Sistem Misi</h2>
+                    <p>Kelola misi harian dan mingguanmu</p>
+                </div>
+                <div class="missions-tabs">
+                    <button class="mission-tab active" data-tab="daily">Harian</button>
+                    <button class="mission-tab" data-tab="weekly">Mingguan</button>
+                </div>
+                <div class="missions-content">
+                    <div id="dailyMissions" class="mission-tab-content active">
+                        <div class="mission-section-header">
+                            <h3>Misi Harian</h3>
+                            <span class="reset-info">Reset otomatis setiap hari</span>
+                        </div>
+                        <div class="mission-list-full" id="dailyMissionsList"></div>
+                    </div>
+                    <div id="weeklyMissions" class="mission-tab-content">
+                        <div class="mission-section-header">
+                            <h3>Misi Mingguan</h3>
+                            <span class="reset-info">Reset otomatis setiap minggu</span>
+                        </div>
+                        <div class="mission-list-full" id="weeklyMissionsList"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SCHEDULE PAGE -->
+            <div id="page-schedule" class="page">
+                <div class="page-header">
+                    <h2>Jadwal Mingguan</h2>
+                    <p>Atur rutinitas belajarmu</p>
+                </div>
+                <div class="schedule-container" id="scheduleContainer">
+                    <!-- Schedule items akan dirender di sini -->
+                </div>
+            </div>
+
+            <!-- STATS PAGE -->
+            <div id="page-stats" class="page">
+                <div class="page-header">
+                    <h2>Statistik</h2>
+                    <p>Analisis perkembanganmu</p>
+                </div>
+                <div class="stats-grid">
+                    <div class="stats-card">
+                        <h3>Tugas Selesai (7 Hari Terakhir)</h3>
+                        <canvas id="tasksChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="stats-card">
+                        <h3>XP Diperoleh (7 Hari Terakhir)</h3>
+                        <canvas id="xpChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="stats-card">
+                        <h3>Progress Roadmap</h3>
+                        <canvas id="roadmapChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="stats-card">
+                        <h3>Ringkasan</h3>
+                        <div class="summary-stats">
+                            <div class="summary-stat">
+                                <span class="summary-stat-value" id="summaryTotalTasks">0</span>
+                                <span class="summary-stat-label">Total Tugas</span>
+                            </div>
+                            <div class="summary-stat">
+                                <span class="summary-stat-value" id="summaryCompletedTasks">0</span>
+                                <span class="summary-stat-label">Tugas Selesai</span>
+                            </div>
+                            <div class="summary-stat">
+                                <span class="summary-stat-value" id="summaryTotalXP">0</span>
+                                <span class="summary-stat-label">Total XP</span>
+                            </div>
+                            <div class="summary-stat">
+                                <span class="summary-stat-value" id="summaryMaxStreak">0</span>
+                                <span class="summary-stat-label">Streak Tertinggi</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACHIEVEMENTS PAGE -->
+            <div id="page-achievements" class="page">
+                <div class="page-header">
+                    <h2>Prestasi</h2>
+                    <p>Kumpulkan semua badge prestasi</p>
+                </div>
+                <div class="achievements-grid" id="achievementsGrid">
+                    <!-- Achievements akan dirender di sini -->
+                </div>
+            </div>
+
+            <!-- SETTINGS PAGE -->
+            <div id="page-settings" class="page">
+                <div class="page-header">
+                    <h2>Pengaturan</h2>
+                    <p>Sesuaikan aplikasi sesuai kebutuhanmu</p>
+                </div>
+                <div class="settings-container">
+                    <div class="settings-section">
+                        <h3>Profil</h3>
+                        <div class="settings-group">
+                            <label>Nama Pengguna</label>
+                            <input type="text" id="settingName" placeholder="Masukkan nama">
+                        </div>
+                        <div class="settings-group">
+                            <label>Umur Saat Ini</label>
+                            <input type="number" id="settingAge" placeholder="Umur" min="1" max="100">
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>Target</h3>
+                        <div class="settings-group">
+                            <label>Target Harian (jumlah tugas)</label>
+                            <input type="number" id="settingDailyTarget" placeholder="Contoh: 5" min="1">
+                        </div>
+                        <div class="settings-group">
+                            <label>Target Mingguan (jumlah tugas)</label>
+                            <input type="number" id="settingWeeklyTarget" placeholder="Contoh: 20" min="1">
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>Tampilan</h3>
+                        <div class="settings-group">
+                            <label>Tema</label>
+                            <div class="theme-options">
+                                <button class="theme-option active" data-theme="dark">Dark</button>
+                                <button class="theme-option" data-theme="light">Light</button>
+                            </div>
+                        </div>
+                        <div class="settings-group">
+                            <label>Warna Aksen</label>
+                            <div class="accent-options">
+                                <button class="accent-option active" data-accent="indigo" style="background: #6366f1"></button>
+                                <button class="accent-option" data-accent="emerald" style="background: #10b981"></button>
+                                <button class="accent-option" data-accent="rose" style="background: #f43f5e"></button>
+                                <button class="accent-option" data-accent="amber" style="background: #f59e0b"></button>
+                                <button class="accent-option" data-accent="cyan" style="background: #06b6d4"></button>
+                                <button class="accent-option" data-accent="violet" style="background: #8b5cf6"></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>Data</h3>
+                        <div class="settings-actions">
+                            <button class="btn btn-danger" id="btnResetData">Reset Semua Data</button>
+                            <button class="btn btn-secondary" id="btnExportData">Export Data</button>
+                            <button class="btn btn-secondary" id="btnImportData">Import Data</button>
+                            <input type="file" id="importFileInput" accept=".json" style="display:none">
+                        </div>
+                    </div>
+
+                    <div class="settings-footer">
+                        <button class="btn btn-primary btn-full" id="btnSaveSettings">Simpan Pengaturan</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Floating Action Button -->
+    <button id="fab" class="fab">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+    </button>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Title</h3>
+                <button class="modal-close" id="modalClose">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <div class="toast-icon" id="toastIcon"></div>
+        <div class="toast-message" id="toastMessage"></div>
+    </div>
+
+    <!-- XP Popup -->
+    <div id="xpPopup" class="xp-popup">
+        <span class="xp-popup-text">+10 XP</span>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

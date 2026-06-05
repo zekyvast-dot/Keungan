@@ -1,0 +1,1574 @@
+/**
+ * ============================================
+ * LIFE QUEST RPG - MAIN SCRIPT
+ * Modern Productivity RPG Web App
+ * Pure Vanilla JavaScript - No Frameworks
+ * ============================================
+ */
+
+// ============================================
+// KONFIGURASI & KONSTANTA
+// ============================================
+const CONFIG = {
+    XP_PER_TASK: 10,
+    XP_PER_LEVEL_BASE: 100,
+    XP_LEVEL_MULTIPLIER: 1.5,
+    STREAK_BONUS: 5,
+    STORAGE_KEY: 'lifeQuestRPG_data',
+    DAYS_OF_WEEK: ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'],
+    ACHIEVEMENTS: [
+        { id: 'streak_210', title: 'Konsisten 210 Hari', desc: 'Belajar 210 hari berturut-turut', icon: '🔥', requirement: 210, type: 'streak' },
+        { id: 'streak_30', title: 'Konsisten 30 Hari', desc: 'Belajar 30 hari berturut-turut', icon: '🔥', requirement: 30, type: 'streak' },
+        { id: 'streak_100', title: 'Konsisten 100 Hari', desc: 'Belajar 100 hari berturut-turut', icon: '🔥', requirement: 100, type: 'streak' },
+        { id: 'first_roadmap', title: 'Langkah Pertama', desc: 'Selesaikan roadmap pertama', icon: '🎯', requirement: 1, type: 'roadmap' },
+        { id: 'tasks_100', title: 'Pekerja Keras', desc: 'Selesaikan 100 tugas', icon: '💪', requirement: 100, type: 'tasks' },
+        { id: 'tasks_500', title: 'Sangat Produktif', desc: 'Selesaikan 500 tugas', icon: '🚀', requirement: 500, type: 'tasks' },
+        { id: 'level_10', title: 'Petualang Senior', desc: 'Capai level 10', icon: '⭐', requirement: 10, type: 'level' },
+        { id: 'level_25', title: 'Master Quest', desc: 'Capai level 25', icon: '👑', requirement: 25, type: 'level' }
+    ]
+};
+
+// ============================================
+// STATE MANAGEMENT
+// ============================================
+const AppState = {
+    data: null,
+    currentPage: 'dashboard',
+    draggedItem: null,
+    draggedType: null,
+
+    // Inisialisasi data default
+    getDefaultData() {
+        return {
+            user: {
+                name: 'Petualang',
+                age: 17,
+                xp: 0,
+                level: 1,
+                streak: 0,
+                maxStreak: 0,
+                totalTasksCompleted: 0,
+                lastActiveDate: new Date().toDateString(),
+                dailyTarget: 5,
+                weeklyTarget: 20,
+                theme: 'dark',
+                accent: 'indigo'
+            },
+            roadmaps: [
+                {
+                    id: 'rm_1',
+                    age: 17,
+                    title: 'Bahasa Inggris',
+                    completed: false,
+                    missions: {
+                        daily: [
+                            { id: 'm1_1', title: 'Kosakata', completed: false, target: 15, current: 0, xp: 10 },
+                            { id: 'm1_2', title: 'Listening', completed: false, target: 1, current: 0, xp: 10 },
+                            { id: 'm1_3', title: 'Speaking', completed: false, target: 1, current: 0, xp: 10 },
+                            { id: 'm1_4', title: 'Writing', completed: false, target: 1, current: 0, xp: 10 }
+                        ],
+                        weekly: [
+                            { id: 'm1_5', title: 'Grammar', completed: false, target: 1, current: 0, xp: 25 },
+                            { id: 'm1_6', title: 'Review', completed: false, target: 1, current: 0, xp: 25 },
+                            { id: 'm1_7', title: 'Test', completed: false, target: 1, current: 0, xp: 50 }
+                        ]
+                    }
+                },
+                {
+                    id: 'rm_2',
+                    age: 18,
+                    title: 'Bahasa Korea',
+                    completed: false,
+                    missions: {
+                        daily: [
+                            { id: 'm2_1', title: 'Hangeul', completed: false, target: 10, current: 0, xp: 10 },
+                            { id: 'm2_2', title: 'Kosakata', completed: false, target: 10, current: 0, xp: 10 }
+                        ],
+                        weekly: [
+                            { id: 'm2_3', title: 'Grammar', completed: false, target: 1, current: 0, xp: 25 }
+                        ]
+                    }
+                },
+                {
+                    id: 'rm_3',
+                    age: 19,
+                    title: 'Persiapan Kerja',
+                    completed: false,
+                    missions: {
+                        daily: [
+                            { id: 'm3_1', title: 'CV & Portfolio', completed: false, target: 1, current: 0, xp: 15 },
+                            { id: 'm3_2', title: 'Interview Practice', completed: false, target: 1, current: 0, xp: 15 }
+                        ],
+                        weekly: [
+                            { id: 'm3_3', title: 'Apply Pekerjaan', completed: false, target: 3, current: 0, xp: 50 }
+                        ]
+                    }
+                },
+                {
+                    id: 'rm_4',
+                    age: 20,
+                    title: 'Kumpulkan Modal',
+                    completed: false,
+                    missions: {
+                        daily: [
+                            { id: 'm4_1', title: 'Tabungan', completed: false, target: 1, current: 0, xp: 10 },
+                            { id: 'm4_2', title: 'Investasi', completed: false, target: 1, current: 0, xp: 15 }
+                        ],
+                        weekly: [
+                            { id: 'm4_3', title: 'Review Keuangan', completed: false, target: 1, current: 0, xp: 30 }
+                        ]
+                    }
+                },
+                {
+                    id: 'rm_5',
+                    age: 25,
+                    title: 'Bangun Bisnis',
+                    completed: false,
+                    missions: {
+                        daily: [
+                            { id: 'm5_1', title: 'Riset Pasar', completed: false, target: 1, current: 0, xp: 15 },
+                            { id: 'm5_2', title: 'Produk', completed: false, target: 1, current: 0, xp: 15 }
+                        ],
+                        weekly: [
+                            { id: 'm5_3', title: 'Business Plan', completed: false, target: 1, current: 0, xp: 50 }
+                        ]
+                    }
+                }
+            ],
+            schedule: {
+                'Senin': [{ id: 's1', text: 'Kosakata' }],
+                'Selasa': [{ id: 's2', text: 'Grammar' }],
+                'Rabu': [{ id: 's3', text: 'Listening' }],
+                'Kamis': [{ id: 's4', text: 'Speaking' }],
+                'Jumat': [{ id: 's5', text: 'Writing' }],
+                'Sabtu': [{ id: 's6', text: 'Review' }],
+                'Minggu': [{ id: 's7', text: 'Tes' }]
+            },
+            achievements: [],
+            history: {
+                tasksCompleted: [],
+                xpEarned: []
+            }
+        };
+    },
+
+    // Load data dari LocalStorage
+    load() {
+        try {
+            const saved = localStorage.getItem(CONFIG.STORAGE_KEY);
+            if (saved) {
+                this.data = JSON.parse(saved);
+                this.migrateData();
+                this.checkDailyReset();
+                this.checkWeeklyReset();
+            } else {
+                this.data = this.getDefaultData();
+                this.save();
+            }
+        } catch (e) {
+            console.error('Error loading data:', e);
+            this.data = this.getDefaultData();
+        }
+        this.applyTheme();
+    },
+
+    // Save data ke LocalStorage
+    save() {
+        try {
+            localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(this.data));
+        } catch (e) {
+            console.error('Error saving data:', e);
+        }
+    },
+
+    // Migrasi data jika ada perubahan struktur
+    migrateData() {
+        if (!this.data.user.maxStreak) this.data.user.maxStreak = this.data.user.streak;
+        if (!this.data.user.dailyTarget) this.data.user.dailyTarget = 5;
+        if (!this.data.user.weeklyTarget) this.data.user.weeklyTarget = 20;
+        if (!this.data.user.theme) this.data.user.theme = 'dark';
+        if (!this.data.user.accent) this.data.user.accent = 'indigo';
+        if (!this.data.history) this.data.history = { tasksCompleted: [], xpEarned: [] };
+        if (!this.data.achievements) this.data.achievements = [];
+    },
+
+    // Check dan reset harian
+    checkDailyReset() {
+        const today = new Date().toDateString();
+        const lastActive = this.data.user.lastActiveDate;
+
+        if (lastActive !== today) {
+            const lastDate = new Date(lastActive);
+            const todayDate = new Date(today);
+            const diffDays = Math.floor((todayDate - lastDate) / (1000 * 60 * 60 * 24));
+
+            if (diffDays > 1) {
+                this.data.user.streak = 0;
+            }
+
+            // Reset daily missions
+            this.data.roadmaps.forEach(rm => {
+                rm.missions.daily.forEach(m => {
+                    m.completed = false;
+                    m.current = 0;
+                });
+            });
+
+            this.data.user.lastActiveDate = today;
+            this.save();
+        }
+    },
+
+    // Check dan reset mingguan
+    checkWeeklyReset() {
+        const now = new Date();
+        const weekStart = this.getWeekStart(now);
+        const savedWeekStart = this.data.user.lastWeekStart;
+
+        if (!savedWeekStart || weekStart !== savedWeekStart) {
+            this.data.roadmaps.forEach(rm => {
+                rm.missions.weekly.forEach(m => {
+                    m.completed = false;
+                    m.current = 0;
+                });
+            });
+            this.data.user.lastWeekStart = weekStart;
+            this.save();
+        }
+    },
+
+    getWeekStart(date) {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = d.getDate() - day;
+        return new Date(d.setDate(diff)).toDateString();
+    },
+
+    // Apply tema
+    applyTheme() {
+        document.documentElement.setAttribute('data-theme', this.data.user.theme);
+        document.documentElement.setAttribute('data-accent', this.data.user.accent);
+    },
+
+    // XP & Level System
+    addXP(amount) {
+        this.data.user.xp += amount;
+        const needed = this.getXPForLevel(this.data.user.level);
+        
+        while (this.data.user.xp >= needed) {
+            this.data.user.xp -= needed;
+            this.data.user.level++;
+            this.showLevelUp();
+        }
+        
+        // Record history
+        const today = new Date().toDateString();
+        const todayEntry = this.data.history.xpEarned.find(e => e.date === today);
+        if (todayEntry) {
+            todayEntry.amount += amount;
+        } else {
+            this.data.history.xpEarned.push({ date: today, amount });
+        }
+        
+        this.save();
+    },
+
+    getXPForLevel(level) {
+        return Math.floor(CONFIG.XP_PER_LEVEL_BASE * Math.pow(CONFIG.XP_LEVEL_MULTIPLIER, level - 1));
+    },
+
+    getXPProgress() {
+        const needed = this.getXPForLevel(this.data.user.level);
+        return {
+            current: this.data.user.xp,
+            needed: needed,
+            percentage: (this.data.user.xp / needed) * 100
+        };
+    },
+
+    // Streak System
+    updateStreak() {
+        const today = new Date().toDateString();
+        if (this.data.user.lastActiveDate === today) return;
+        
+        const lastDate = new Date(this.data.user.lastActiveDate);
+        const todayDate = new Date(today);
+        const diffDays = Math.floor((todayDate - lastDate) / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 1) {
+            this.data.user.streak++;
+            if (this.data.user.streak > this.data.user.maxStreak) {
+                this.data.user.maxStreak = this.data.user.streak;
+            }
+        } else if (diffDays > 1) {
+            this.data.user.streak = 1;
+        }
+        
+        this.data.user.lastActiveDate = today;
+        this.save();
+    },
+
+    // Complete task
+    completeMission(roadmapId, missionId, missionType) {
+        const roadmap = this.data.roadmaps.find(r => r.id === roadmapId);
+        if (!roadmap) return false;
+        
+        const mission = roadmap.missions[missionType].find(m => m.id === missionId);
+        if (!mission || mission.completed) return false;
+        
+        mission.current++;
+        
+        if (mission.current >= mission.target) {
+            mission.completed = true;
+            this.data.user.totalTasksCompleted++;
+            
+            // Add XP
+            this.addXP(mission.xp);
+            
+            // Show XP popup
+            this.showXPPopup(mission.xp);
+            
+            // Record history
+            const today = new Date().toDateString();
+            const todayEntry = this.data.history.tasksCompleted.find(e => e.date === today);
+            if (todayEntry) {
+                todayEntry.count++;
+            } else {
+                this.data.history.tasksCompleted.push({ date: today, count: 1 });
+            }
+            
+            // Update streak
+            this.updateStreak();
+            
+            // Check roadmap completion
+            this.checkRoadmapCompletion(roadmap);
+            
+            // Check achievements
+            this.checkAchievements();
+            
+            this.save();
+            return true;
+        }
+        
+        this.save();
+        return false;
+    },
+
+    // Uncheck mission
+    uncheckMission(roadmapId, missionId, missionType) {
+        const roadmap = this.data.roadmaps.find(r => r.id === roadmapId);
+        if (!roadmap) return;
+        
+        const mission = roadmap.missions[missionType].find(m => m.id === missionId);
+        if (!mission || !mission.completed) return;
+        
+        mission.completed = false;
+        mission.current = 0;
+        this.data.user.totalTasksCompleted = Math.max(0, this.data.user.totalTasksCompleted - 1);
+        
+        // Subtract XP (optional - keeping it simple, not subtracting)
+        
+        this.save();
+    },
+
+    // Check if roadmap is complete
+    checkRoadmapCompletion(roadmap) {
+        const allDailyDone = roadmap.missions.daily.every(m => m.completed);
+        const allWeeklyDone = roadmap.missions.weekly.every(m => m.completed);
+        
+        if (allDailyDone && allWeeklyDone) {
+            roadmap.completed = true;
+        }
+    },
+
+    // Check achievements
+    checkAchievements() {
+        CONFIG.ACHIEVEMENTS.forEach(ach => {
+            if (this.data.achievements.includes(ach.id)) return;
+            
+            let unlocked = false;
+            switch (ach.type) {
+                case 'streak':
+                    unlocked = this.data.user.streak >= ach.requirement;
+                    break;
+                case 'roadmap':
+                    unlocked = this.data.roadmaps.filter(r => r.completed).length >= ach.requirement;
+                    break;
+                case 'tasks':
+                    unlocked = this.data.user.totalTasksCompleted >= ach.requirement;
+                    break;
+                case 'level':
+                    unlocked = this.data.user.level >= ach.requirement;
+                    break;
+            }
+            
+            if (unlocked) {
+                this.data.achievements.push(ach.id);
+                this.showToast(`Prestasi terbuka: ${ach.title}!`, 'success');
+            }
+        });
+        this.save();
+    },
+
+    // Get overall progress
+    getOverallProgress() {
+        let total = 0;
+        let completed = 0;
+        
+        this.data.roadmaps.forEach(rm => {
+            [...rm.missions.daily, ...rm.missions.weekly].forEach(m => {
+                total++;
+                if (m.completed) completed++;
+            });
+        });
+        
+        return { total, completed, percentage: total > 0 ? Math.round((completed / total) * 100) : 0 };
+    },
+
+    // Get today's missions
+    getTodayMissions() {
+        const dayName = CONFIG.DAYS_OF_WEEK[new Date().getDay()];
+        const scheduleItems = this.data.schedule[dayName] || [];
+        const missions = [];
+        
+        this.data.roadmaps.forEach(rm => {
+            rm.missions.daily.forEach(m => {
+                const isScheduled = scheduleItems.some(s => 
+                    s.text.toLowerCase().includes(m.title.toLowerCase()) ||
+                    m.title.toLowerCase().includes(s.text.toLowerCase())
+                );
+                if (isScheduled || !scheduleItems.length) {
+                    missions.push({ ...m, roadmapId: rm.id, roadmapTitle: rm.title, type: 'daily' });
+                }
+            });
+        });
+        
+        return missions;
+    },
+
+    // Get all daily missions
+    getAllDailyMissions() {
+        const missions = [];
+        this.data.roadmaps.forEach(rm => {
+            rm.missions.daily.forEach(m => {
+                missions.push({ ...m, roadmapId: rm.id, roadmapTitle: rm.title, type: 'daily' });
+            });
+        });
+        return missions;
+    },
+
+    // Get all weekly missions
+    getAllWeeklyMissions() {
+        const missions = [];
+        this.data.roadmaps.forEach(rm => {
+            rm.missions.weekly.forEach(m => {
+                missions.push({ ...m, roadmapId: rm.id, roadmapTitle: rm.title, type: 'weekly' });
+            });
+        });
+        return missions;
+    },
+
+    // Show XP popup
+    showXPPopup(amount) {
+        const popup = document.getElementById('xpPopup');
+        const text = popup.querySelector('.xp-popup-text');
+        text.textContent = `+${amount} XP`;
+        
+        const rect = document.activeElement.getBoundingClientRect();
+        popup.style.left = `${rect.left + rect.width / 2}px`;
+        popup.style.top = `${rect.top}px`;
+        
+        popup.classList.add('show');
+        setTimeout(() => popup.classList.remove('show'), 1500);
+    },
+
+    // Show level up
+    showLevelUp() {
+        const overlay = document.createElement('div');
+        overlay.className = 'level-up-overlay';
+        overlay.innerHTML = `
+            <div class="level-up-text">LEVEL UP!</div>
+            <div class="level-up-sub">Level ${this.data.user.level}</div>
+        `;
+        document.body.appendChild(overlay);
+        
+        setTimeout(() => overlay.classList.add('active'), 10);
+        setTimeout(() => {
+            overlay.classList.remove('active');
+            setTimeout(() => overlay.remove(), 300);
+        }, 2500);
+    },
+
+    // Show toast
+    showToast(message, type = 'info') {
+        const toast = document.getElementById('toast');
+        const icon = document.getElementById('toastIcon');
+        const msg = document.getElementById('toastMessage');
+        
+        const icons = {
+            success: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>',
+            error: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+            info: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+        };
+        
+        icon.innerHTML = icons[type] || icons.info;
+        icon.className = `toast-icon ${type}`;
+        msg.textContent = message;
+        
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    },
+
+    // Generate unique ID
+    generateId() {
+        return 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+};
+
+// ============================================
+// UI RENDERERS
+// ============================================
+
+const UI = {
+    // Render Dashboard
+    renderDashboard() {
+        const user = AppState.data.user;
+        const progress = AppState.getOverallProgress();
+        const xpProgress = AppState.getXPProgress();
+        const todayMissions = AppState.getTodayMissions();
+        
+        // Hero section
+        document.getElementById('heroName').textContent = user.name;
+        document.getElementById('heroAge').textContent = user.age;
+        document.getElementById('heroLevel').textContent = user.level;
+        document.getElementById('heroStreak').textContent = `${user.streak} hari`;
+        
+        // XP Card
+        document.getElementById('xpBadge').textContent = `Level ${user.level}`;
+        document.getElementById('xpCurrent').textContent = xpProgress.current;
+        document.getElementById('xpNeeded').textContent = xpProgress.needed;
+        document.getElementById('xpRingValue').textContent = xpProgress.current;
+        
+        const ring = document.getElementById('xpRingProgress');
+        const circumference = 2 * Math.PI * 52;
+        const offset = circumference - (xpProgress.percentage / 100) * circumference;
+        ring.style.strokeDashoffset = offset;
+        
+        // Overall Progress
+        document.getElementById('overallProgressValue').textContent = `${progress.percentage}%`;
+        document.getElementById('overallProgress').style.background = 
+            `conic-gradient(var(--accent-primary) ${progress.percentage}%, var(--bg-tertiary) ${progress.percentage}%)`;
+        document.getElementById('tasksCompletedCount').textContent = progress.completed;
+        document.getElementById('tasksTotalCount').textContent = progress.total;
+        
+        // Today's missions
+        document.getElementById('todayDate').textContent = new Date().toLocaleDateString('id-ID', { 
+            weekday: 'long', day: 'numeric', month: 'short' 
+        });
+        
+        const todayList = document.getElementById('todayMissionsList');
+        if (todayMissions.length === 0) {
+            todayList.innerHTML = '<div class="empty-state"><p>Belum ada misi untuk hari ini</p></div>';
+        } else {
+            todayList.innerHTML = todayMissions.map(m => `
+                <div class="mission-item">
+                    <div class="mission-checkbox ${m.completed ? 'checked' : ''}" 
+                         onclick="Actions.toggleMission('${m.roadmapId}', '${m.id}', '${m.type}')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                    </div>
+                    <div class="mission-info">
+                        <div class="mission-title ${m.completed ? 'completed' : ''}">${m.title}</div>
+                        <div class="mission-meta">${m.roadmapTitle}</div>
+                    </div>
+                    <div class="mission-xp">+${m.xp} XP</div>
+                </div>
+            `).join('');
+        }
+        
+        // Active roadmap
+        const activeRoadmap = document.getElementById('activeRoadmap');
+        const activeRm = AppState.data.roadmaps.find(r => !r.completed);
+        if (activeRm) {
+            const rmProgress = this.getRoadmapProgress(activeRm);
+            activeRoadmap.innerHTML = `
+                <div class="roadmap-item" style="border: none; background: var(--bg-card)">
+                    <div class="roadmap-header" style="padding: 16px">
+                        <div class="roadmap-age" style="width: 48px; height: 48px; font-size: 1rem">${activeRm.age}</div>
+                        <div class="roadmap-info">
+                            <div class="roadmap-title">${activeRm.title}</div>
+                            <div class="roadmap-progress">${rmProgress.completed}/${rmProgress.total} misi selesai</div>
+                            <div class="roadmap-progress-bar" style="margin-top: 6px">
+                                <div class="roadmap-progress-fill" style="width: ${rmProgress.percentage}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            activeRoadmap.innerHTML = '<div class="empty-state"><p>Semua roadmap selesai!</p></div>';
+        }
+        
+        // Mini stats
+        document.getElementById('miniCompleted').textContent = user.totalTasksCompleted;
+        document.getElementById('miniXP').textContent = user.xp;
+        document.getElementById('miniStreak').textContent = user.streak;
+        document.getElementById('miniAchievements').textContent = AppState.data.achievements.length;
+        
+        // Header
+        document.getElementById('headerXP').textContent = `${user.xp} XP`;
+        document.getElementById('headerLevel').textContent = user.level;
+    },
+
+    // Render Roadmap
+    renderRoadmap() {
+        const container = document.getElementById('roadmapContainer');
+        let previousCompleted = true;
+        
+        container.innerHTML = AppState.data.roadmaps.map((rm, index) => {
+            const isLocked = !previousCompleted && index > 0;
+            const progress = this.getRoadmapProgress(rm);
+            previousCompleted = rm.completed;
+            
+            return `
+                <div class="roadmap-item ${rm.completed ? '' : ''} ${isLocked ? 'locked' : ''}" 
+                     data-id="${rm.id}" draggable="${!isLocked}">
+                    <div class="roadmap-header" onclick="Actions.toggleRoadmapExpand('${rm.id}')">
+                        <div class="roadmap-drag-handle" draggable="true" data-drag="roadmap" data-id="${rm.id}">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/>
+                                <circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/>
+                            </svg>
+                        </div>
+                        <div class="roadmap-age ${rm.completed ? 'completed' : ''} ${isLocked ? 'locked' : ''}">${rm.age}</div>
+                        <div class="roadmap-info">
+                            <div class="roadmap-title">${rm.title}</div>
+                            <div class="roadmap-progress">${progress.completed}/${progress.total} misi selesai</div>
+                            <div class="roadmap-progress-bar">
+                                <div class="roadmap-progress-fill" style="width: ${progress.percentage}%"></div>
+                            </div>
+                        </div>
+                        <div class="roadmap-actions">
+                            <button class="roadmap-action-btn" onclick="event.stopPropagation(); Actions.editRoadmap('${rm.id}')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                </svg>
+                            </button>
+                            <button class="roadmap-action-btn delete" onclick="event.stopPropagation(); Actions.deleteRoadmap('${rm.id}')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="roadmap-content" id="roadmap-content-${rm.id}">
+                        <div class="roadmap-missions">
+                            ${[...rm.missions.daily, ...rm.missions.weekly].map(m => `
+                                <div class="roadmap-mission ${m.completed ? 'completed' : ''}">
+                                    <div class="mission-checkbox ${m.completed ? 'checked' : ''}" 
+                                         onclick="Actions.toggleMission('${rm.id}', '${m.id}', '${rm.missions.daily.includes(m) ? 'daily' : 'weekly'}')">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                    </div>
+                                    <div class="mission-info">
+                                        <div class="mission-title ${m.completed ? 'completed' : ''}">${m.title}</div>
+                                        <div class="mission-meta">
+                                            ${rm.missions.daily.includes(m) ? 'Harian' : 'Mingguan'} | 
+                                            Target: ${m.target} | +${m.xp} XP
+                                        </div>
+                                    </div>
+                                    <div class="target-editor">
+                                        <input type="number" value="${m.target}" min="1" 
+                                               onchange="Actions.updateTarget('${rm.id}', '${m.id}', this.value, '${rm.missions.daily.includes(m) ? 'daily' : 'weekly'}')">
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        this.initDragAndDrop();
+    },
+
+    // Render Missions
+    renderMissions() {
+        const daily = AppState.getAllDailyMissions();
+        const weekly = AppState.getAllWeeklyMissions();
+        
+        const renderMissionList = (missions) => {
+            if (missions.length === 0) {
+                return '<div class="empty-state"><p>Belum ada misi</p></div>';
+            }
+            return missions.map(m => `
+                <div class="mission-full-item ${m.completed ? 'completed' : ''}">
+                    <div class="mission-full-checkbox ${m.completed ? 'checked' : ''}" 
+                         onclick="Actions.toggleMission('${m.roadmapId}', '${m.id}', '${m.type}')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                    </div>
+                    <div class="mission-full-info">
+                        <div class="mission-full-title">${m.title}</div>
+                        <div class="mission-full-meta">
+                            <span>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                                </svg>
+                                ${m.type === 'daily' ? 'Harian' : 'Mingguan'}
+                            </span>
+                            <span>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                </svg>
+                                ${m.roadmapTitle}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mission-full-xp">+${m.xp} XP</div>
+                    <div class="mission-full-actions">
+                        <button class="btn btn-sm" onclick="Actions.editMission('${m.roadmapId}', '${m.id}', '${m.type}')">Edit</button>
+                        <button class="btn btn-sm btn-danger" onclick="Actions.deleteMission('${m.roadmapId}', '${m.id}', '${m.type}')">Hapus</button>
+                    </div>
+                </div>
+            `).join('');
+        };
+        
+        document.getElementById('dailyMissionsList').innerHTML = renderMissionList(daily);
+        document.getElementById('weeklyMissionsList').innerHTML = renderMissionList(weekly);
+    },
+
+    // Render Schedule
+    renderSchedule() {
+        const container = document.getElementById('scheduleContainer');
+        
+        container.innerHTML = CONFIG.DAYS_OF_WEEK.slice(1).concat(CONFIG.DAYS_OF_WEEK[0]).map(day => {
+            const items = AppState.data.schedule[day] || [];
+            return `
+                <div class="schedule-day" data-day="${day}">
+                    <div class="schedule-day-header">
+                        <span class="schedule-day-name">${day}</span>
+                        <div class="schedule-day-actions">
+                            <button class="schedule-day-action" onclick="Actions.addScheduleItem('${day}')">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="schedule-items" data-day="${day}">
+                        ${items.map(item => `
+                            <div class="schedule-item" draggable="true" data-id="${item.id}" data-day="${day}">
+                                <div class="schedule-item-dot"></div>
+                                <span class="schedule-item-text">${item.text}</span>
+                                <button class="schedule-item-delete" onclick="Actions.deleteScheduleItem('${day}', '${item.id}')">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="schedule-add">
+                        <input type="text" class="schedule-add-input" placeholder="Tambah jadwal..." 
+                               onkeypress="if(event.key==='Enter') Actions.addScheduleItem('${day}', this.value)">
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        this.initScheduleDragDrop();
+    },
+
+    // Render Stats
+    renderStats() {
+        // Get last 7 days data
+        const days = [];
+        const tasksData = [];
+        const xpData = [];
+        const today = new Date();
+        
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date(today);
+            d.setDate(d.getDate() - i);
+            const dateStr = d.toDateString();
+            const dayLabel = d.toLocaleDateString('id-ID', { weekday: 'short' });
+            days.push(dayLabel);
+            
+            const taskEntry = AppState.data.history.tasksCompleted.find(e => e.date === dateStr);
+            tasksData.push(taskEntry ? taskEntry.count : 0);
+            
+            const xpEntry = AppState.data.history.xpEarned.find(e => e.date === dateStr);
+            xpData.push(xpEntry ? xpEntry.amount : 0);
+        }
+        
+        // Draw charts
+        this.drawBarChart('tasksChart', days, tasksData, 'var(--accent-primary)');
+        this.drawBarChart('xpChart', days, xpData, 'var(--warning)');
+        
+        // Roadmap progress chart
+        const roadmapLabels = AppState.data.roadmaps.map(r => r.title);
+        const roadmapData = AppState.data.roadmaps.map(r => {
+            const p = this.getRoadmapProgress(r);
+            return p.percentage;
+        });
+        this.drawBarChart('roadmapChart', roadmapLabels, roadmapData, 'var(--success)');
+        
+        // Summary
+        const progress = AppState.getOverallProgress();
+        document.getElementById('summaryTotalTasks').textContent = progress.total;
+        document.getElementById('summaryCompletedTasks').textContent = progress.completed;
+        document.getElementById('summaryTotalXP').textContent = AppState.data.user.xp;
+        document.getElementById('summaryMaxStreak').textContent = AppState.data.user.maxStreak;
+    },
+
+    // Draw bar chart with Canvas
+        // Draw bar chart with Canvas
+    drawBarChart(canvasId, labels, data, color) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+        
+        const width = rect.width;
+        const height = rect.height;
+        const padding = { top: 20, right: 10, bottom: 40, left: 10 };
+        const chartWidth = width - padding.left - padding.right;
+        const chartHeight = height - padding.top - padding.bottom;
+        
+        const maxValue = Math.max(...data, 1);
+        const barWidth = (chartWidth / data.length) * 0.6;
+        const barGap = (chartWidth / data.length) * 0.4;
+        
+        ctx.clearRect(0, 0, width, height);
+        
+        // Get colors from CSS variables
+        const textPrimary = getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim();
+        const textMuted = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim();
+        
+        // Convert CSS var color to actual color for canvas
+        const getCanvasColor = (cssVar) => {
+            const temp = document.createElement('div');
+            temp.style.color = cssVar;
+            document.body.appendChild(temp);
+            const color = getComputedStyle(temp).color;
+            document.body.removeChild(temp);
+            return color;
+        };
+        
+        const barColor = getCanvasColor(color);
+        const labelColor = getCanvasColor(textMuted);
+        const valueColor = getCanvasColor(textPrimary);
+        
+        // Draw bars
+        data.forEach((value, i) => {
+            const x = padding.left + i * (barWidth + barGap) + barGap / 2;
+            const barHeight = (value / maxValue) * chartHeight;
+            const y = padding.top + chartHeight - barHeight;
+            
+            // Bar with rounded top
+            ctx.fillStyle = barColor;
+            ctx.beginPath();
+            const radius = 4;
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + barWidth - radius, y);
+            ctx.quadraticCurveTo(x + barWidth, y, x + barWidth, y + radius);
+            ctx.lineTo(x + barWidth, y + barHeight);
+            ctx.lineTo(x, y + barHeight);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Value label on top
+            if (value > 0) {
+                ctx.fillStyle = valueColor;
+                ctx.font = 'bold 11px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(value.toString(), x + barWidth / 2, y - 8);
+            }
+            
+            // X axis label
+            ctx.fillStyle = labelColor;
+            ctx.font = '10px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(labels[i], x + barWidth / 2, height - 12);
+        });
+        
+        // Draw zero line if all values are 0
+        if (maxValue === 1 && data.every(v => v === 0)) {
+            ctx.fillStyle = labelColor;
+            ctx.font = '11px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Belum ada data', width / 2, height / 2);
+        }
+    },
+
+    // Render Achievements
+    renderAchievements() {
+        const grid = document.getElementById('achievementsGrid');
+        
+        grid.innerHTML = CONFIG.ACHIEVEMENTS.map(ach => {
+            const unlocked = AppState.data.achievements.includes(ach.id);
+            let progress = 0;
+            
+            switch (ach.type) {
+                case 'streak': progress = Math.min(AppState.data.user.streak / ach.requirement, 1); break;
+                case 'roadmap': progress = Math.min(AppState.data.roadmaps.filter(r => r.completed).length / ach.requirement, 1); break;
+                case 'tasks': progress = Math.min(AppState.data.user.totalTasksCompleted / ach.requirement, 1); break;
+                case 'level': progress = Math.min(AppState.data.user.level / ach.requirement, 1); break;
+            }
+            
+            return `
+                <div class="achievement-card ${unlocked ? 'unlocked' : 'locked'}">
+                    <div class="achievement-icon">${ach.icon}</div>
+                    <div class="achievement-info">
+                        <div class="achievement-title">${ach.title}</div>
+                        <div class="achievement-desc">${ach.desc}</div>
+                        <div class="achievement-progress">
+                            <div class="achievement-progress-fill" style="width: ${progress * 100}%"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    },
+
+    // Render Settings
+    renderSettings() {
+        const user = AppState.data.user;
+        document.getElementById('settingName').value = user.name;
+        document.getElementById('settingAge').value = user.age;
+        document.getElementById('settingDailyTarget').value = user.dailyTarget;
+        document.getElementById('settingWeeklyTarget').value = user.weeklyTarget;
+        
+        // Theme
+        document.querySelectorAll('.theme-option').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.theme === user.theme);
+        });
+        
+        // Accent
+        document.querySelectorAll('.accent-option').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.accent === user.accent);
+        });
+    },
+
+    // Get roadmap progress
+    getRoadmapProgress(roadmap) {
+        const all = [...roadmap.missions.daily, ...roadmap.missions.weekly];
+        const completed = all.filter(m => m.completed).length;
+        return {
+            total: all.length,
+            completed,
+            percentage: all.length > 0 ? Math.round((completed / all.length) * 100) : 0
+        };
+    },
+
+    // Navigation
+    navigateTo(page) {
+        AppState.currentPage = page;
+        
+        // Update nav
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.toggle('active', item.dataset.page === page);
+        });
+        
+        // Update page title
+        const titles = {
+            dashboard: 'Dashboard',
+            roadmap: 'Roadmap',
+            missions: 'Misi',
+            schedule: 'Jadwal',
+            stats: 'Statistik',
+            achievements: 'Prestasi',
+            settings: 'Pengaturan'
+        };
+        document.getElementById('pageTitle').textContent = titles[page] || 'Dashboard';
+        
+        // Show page
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(`page-${page}`).classList.add('active');
+        
+        // Render page content
+        switch (page) {
+            case 'dashboard': this.renderDashboard(); break;
+            case 'roadmap': this.renderRoadmap(); break;
+            case 'missions': this.renderMissions(); break;
+            case 'schedule': this.renderSchedule(); break;
+            case 'stats': this.renderStats(); break;
+            case 'achievements': this.renderAchievements(); break;
+            case 'settings': this.renderSettings(); break;
+        }
+        
+        // Close sidebar on mobile
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('sidebarOverlay').classList.remove('active');
+        
+        // Scroll to top
+        document.querySelector('.pages-container').scrollTop = 0;
+    },
+
+    // Modal
+    openModal(title, content, onConfirm) {
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalBody').innerHTML = content;
+        document.getElementById('modal').classList.add('active');
+        
+        if (onConfirm) {
+            const confirmBtn = document.createElement('button');
+            confirmBtn.className = 'btn btn-primary';
+            confirmBtn.textContent = 'Simpan';
+            confirmBtn.onclick = () => {
+                onConfirm();
+                this.closeModal();
+            };
+            
+            const cancelBtn = document.createElement('button');
+            cancelBtn.className = 'btn btn-secondary';
+            cancelBtn.textContent = 'Batal';
+            cancelBtn.onclick = () => this.closeModal();
+            
+            const actions = document.createElement('div');
+            actions.className = 'modal-actions';
+            actions.appendChild(cancelBtn);
+            actions.appendChild(confirmBtn);
+            document.getElementById('modalBody').appendChild(actions);
+        }
+    },
+
+    closeModal() {
+        document.getElementById('modal').classList.remove('active');
+    },
+
+    // Drag and Drop - Roadmap
+    initDragAndDrop() {
+        const container = document.getElementById('roadmapContainer');
+        let draggedItem = null;
+        
+        container.querySelectorAll('.roadmap-drag-handle').forEach(handle => {
+            handle.addEventListener('dragstart', (e) => {
+                draggedItem = handle.closest('.roadmap-item');
+                draggedItem.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+            });
+            
+            handle.addEventListener('dragend', () => {
+                if (draggedItem) draggedItem.classList.remove('dragging');
+                draggedItem = null;
+            });
+        });
+        
+        container.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const afterElement = this.getDragAfterElement(container, e.clientY);
+            if (draggedItem) {
+                if (afterElement) {
+                    container.insertBefore(draggedItem, afterElement);
+                } else {
+                    container.appendChild(draggedItem);
+                }
+            }
+        });
+        
+        container.addEventListener('drop', () => {
+            // Update order in data
+            const newOrder = Array.from(container.querySelectorAll('.roadmap-item')).map(item => item.dataset.id);
+            const reordered = [];
+            newOrder.forEach(id => {
+                const rm = AppState.data.roadmaps.find(r => r.id === id);
+                if (rm) reordered.push(rm);
+            });
+            AppState.data.roadmaps = reordered;
+            AppState.save();
+            this.renderRoadmap();
+        });
+    },
+
+    getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.roadmap-item:not(.dragging)')];
+        
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            
+            if (offset < 0 && offset > closest.offset) {
+                return { offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    },
+
+    // Drag and Drop - Schedule
+    initScheduleDragDrop() {
+        const items = document.querySelectorAll('.schedule-item');
+        const days = document.querySelectorAll('.schedule-items');
+        
+        items.forEach(item => {
+            item.addEventListener('dragstart', () => {
+                item.classList.add('dragging');
+            });
+            
+            item.addEventListener('dragend', () => {
+                item.classList.remove('dragging');
+            });
+        });
+        
+        days.forEach(day => {
+            day.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                day.closest('.schedule-day').classList.add('drag-over');
+            });
+            
+            day.addEventListener('dragleave', () => {
+                day.closest('.schedule-day').classList.remove('drag-over');
+            });
+            
+            day.addEventListener('drop', (e) => {
+                e.preventDefault();
+                day.closest('.schedule-day').classList.remove('drag-over');
+                
+                const draggedItem = document.querySelector('.schedule-item.dragging');
+                if (!draggedItem) return;
+                
+                const fromDay = draggedItem.dataset.day;
+                const toDay = day.dataset.day;
+                const itemId = draggedItem.dataset.id;
+                
+                if (fromDay === toDay) return;
+                
+                // Move item
+                const item = AppState.data.schedule[fromDay].find(i => i.id === itemId);
+                if (item) {
+                    AppState.data.schedule[fromDay] = AppState.data.schedule[fromDay].filter(i => i.id !== itemId);
+                    if (!AppState.data.schedule[toDay]) AppState.data.schedule[toDay] = [];
+                    AppState.data.schedule[toDay].push(item);
+                    AppState.save();
+                    this.renderSchedule();
+                }
+            });
+        });
+    }
+};
+
+// ============================================
+// ACTIONS
+// ============================================
+const Actions = {
+    // Toggle mission completion
+    toggleMission(roadmapId, missionId, type) {
+        const roadmap = AppState.data.roadmaps.find(r => r.id === roadmapId);
+        const mission = roadmap.missions[type].find(m => m.id === missionId);
+        
+        if (mission.completed) {
+            AppState.uncheckMission(roadmapId, missionId, type);
+            AppState.showToast('Misi dibatalkan', 'info');
+        } else {
+            const completed = AppState.completeMission(roadmapId, missionId, type);
+            if (completed) {
+                AppState.showToast('Misi selesai! XP ditambahkan', 'success');
+            }
+        }
+        
+        UI.renderDashboard();
+        if (AppState.currentPage === 'roadmap') UI.renderRoadmap();
+        if (AppState.currentPage === 'missions') UI.renderMissions();
+        if (AppState.currentPage === 'stats') UI.renderStats();
+        if (AppState.currentPage === 'achievements') UI.renderAchievements();
+    },
+
+    // Toggle roadmap expand
+    toggleRoadmapExpand(roadmapId) {
+        const item = document.querySelector(`[data-id="${roadmapId}"]`);
+        item.classList.toggle('expanded');
+    },
+
+    // Update target
+    updateTarget(roadmapId, missionId, value, type) {
+        const roadmap = AppState.data.roadmaps.find(r => r.id === roadmapId);
+        const mission = roadmap.missions[type].find(m => m.id === missionId);
+        mission.target = parseInt(value) || 1;
+        AppState.save();
+        AppState.showToast('Target diperbarui', 'success');
+    },
+
+    // Add roadmap
+    addRoadmap() {
+        const content = `
+            <div class="form-group">
+                <label>Umur Target</label>
+                <input type="number" id="newRoadmapAge" min="1" max="100" placeholder="Contoh: 22">
+            </div>
+            <div class="form-group">
+                <label>Judul Roadmap</label>
+                <input type="text" id="newRoadmapTitle" placeholder="Contoh: Kuliah di Luar Negeri">
+            </div>
+        `;
+        
+        UI.openModal('Tambah Roadmap', content, () => {
+            const age = parseInt(document.getElementById('newRoadmapAge').value);
+            const title = document.getElementById('newRoadmapTitle').value.trim();
+            
+            if (!age || !title) {
+                AppState.showToast('Semua field harus diisi', 'error');
+                return;
+            }
+            
+            AppState.data.roadmaps.push({
+                id: AppState.generateId(),
+                age,
+                title,
+                completed: false,
+                missions: { daily: [], weekly: [] }
+            });
+            
+            AppState.save();
+            UI.renderRoadmap();
+            AppState.showToast('Roadmap ditambahkan', 'success');
+        });
+    },
+
+    // Edit roadmap
+    editRoadmap(roadmapId) {
+        const roadmap = AppState.data.roadmaps.find(r => r.id === roadmapId);
+        
+        const content = `
+            <div class="form-group">
+                <label>Umur Target</label>
+                <input type="number" id="editRoadmapAge" value="${roadmap.age}" min="1" max="100">
+            </div>
+            <div class="form-group">
+                <label>Judul Roadmap</label>
+                <input type="text" id="editRoadmapTitle" value="${roadmap.title}">
+            </div>
+        `;
+        
+        UI.openModal('Edit Roadmap', content, () => {
+            roadmap.age = parseInt(document.getElementById('editRoadmapAge').value) || roadmap.age;
+            roadmap.title = document.getElementById('editRoadmapTitle').value.trim() || roadmap.title;
+            AppState.save();
+            UI.renderRoadmap();
+            AppState.showToast('Roadmap diperbarui', 'success');
+        });
+    },
+
+    // Delete roadmap
+    deleteRoadmap(roadmapId) {
+        if (!confirm('Yakin ingin menghapus roadmap ini?')) return;
+        AppState.data.roadmaps = AppState.data.roadmaps.filter(r => r.id !== roadmapId);
+        AppState.save();
+        UI.renderRoadmap();
+        AppState.showToast('Roadmap dihapus', 'info');
+    },
+
+    // Add mission
+    addMission() {
+        const content = `
+            <div class="form-group">
+                <label>Roadmap</label>
+                <select id="missionRoadmap">
+                    ${AppState.data.roadmaps.map(r => `<option value="${r.id}">${r.title}</option>`).join('')}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Tipe Misi</label>
+                <select id="missionType">
+                    <option value="daily">Harian</option>
+                    <option value="weekly">Mingguan</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Judul Misi</label>
+                <input type="text" id="missionTitle" placeholder="Contoh: Baca Buku">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Target</label>
+                    <input type="number" id="missionTarget" value="1" min="1">
+                </div>
+                <div class="form-group">
+                    <label>XP</label>
+                    <input type="number" id="missionXP" value="10" min="1">
+                </div>
+            </div>
+        `;
+        
+        UI.openModal('Tambah Misi', content, () => {
+            const roadmapId = document.getElementById('missionRoadmap').value;
+            const type = document.getElementById('missionType').value;
+            const title = document.getElementById('missionTitle').value.trim();
+            const target = parseInt(document.getElementById('missionTarget').value) || 1;
+            const xp = parseInt(document.getElementById('missionXP').value) || 10;
+            
+            if (!title) {
+                AppState.showToast('Judul misi harus diisi', 'error');
+                return;
+            }
+            
+            const roadmap = AppState.data.roadmaps.find(r => r.id === roadmapId);
+            roadmap.missions[type].push({
+                id: AppState.generateId(),
+                title,
+                completed: false,
+                target,
+                current: 0,
+                xp
+            });
+            
+            AppState.save();
+            UI.renderMissions();
+            if (AppState.currentPage === 'roadmap') UI.renderRoadmap();
+            AppState.showToast('Misi ditambahkan', 'success');
+        });
+    },
+
+    // Edit mission
+    editMission(roadmapId, missionId, type) {
+        const roadmap = AppState.data.roadmaps.find(r => r.id === roadmapId);
+        const mission = roadmap.missions[type].find(m => m.id === missionId);
+        
+        const content = `
+            <div class="form-group">
+                <label>Judul Misi                <input type="text" id="editMissionTitle" value="${mission.title}">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Target</label>
+                    <input type="number" id="editMissionTarget" value="${mission.target}" min="1">
+                </div>
+                <div class="form-group">
+                    <label>XP</label>
+                    <input type="number" id="editMissionXP" value="${mission.xp}" min="1">
+                </div>
+            </div>
+        `;
+        
+        UI.openModal('Edit Misi', content, () => {
+            mission.title = document.getElementById('editMissionTitle').value.trim() || mission.title;
+            mission.target = parseInt(document.getElementById('editMissionTarget').value) || mission.target;
+            mission.xp = parseInt(document.getElementById('editMissionXP').value) || mission.xp;
+            AppState.save();
+            UI.renderMissions();
+            if (AppState.currentPage === 'roadmap') UI.renderRoadmap();
+            if (AppState.currentPage === 'dashboard') UI.renderDashboard();
+            AppState.showToast('Misi diperbarui', 'success');
+        });
+    },
+
+    // Delete mission
+    deleteMission(roadmapId, missionId, type) {
+        if (!confirm('Yakin ingin menghapus misi ini?')) return;
+        const roadmap = AppState.data.roadmaps.find(r => r.id === roadmapId);
+        roadmap.missions[type] = roadmap.missions[type].filter(m => m.id !== missionId);
+        AppState.save();
+        UI.renderMissions();
+        if (AppState.currentPage === 'roadmap') UI.renderRoadmap();
+        AppState.showToast('Misi dihapus', 'info');
+    },
+
+    // Add schedule item
+    addScheduleItem(day, value) {
+        let text = value;
+        if (!text) {
+            const input = document.querySelector(`.schedule-day[data-day="${day}"] .schedule-add-input`);
+            text = input.value.trim();
+            if (!text) return;
+            input.value = '';
+        }
+        
+        if (!AppState.data.schedule[day]) AppState.data.schedule[day] = [];
+        AppState.data.schedule[day].push({
+            id: AppState.generateId(),
+            text
+        });
+        AppState.save();
+        UI.renderSchedule();
+        AppState.showToast('Jadwal ditambahkan', 'success');
+    },
+
+    // Delete schedule item
+    deleteScheduleItem(day, itemId) {
+        AppState.data.schedule[day] = AppState.data.schedule[day].filter(i => i.id !== itemId);
+        AppState.save();
+        UI.renderSchedule();
+    },
+
+    // Save settings
+    saveSettings() {
+        const user = AppState.data.user;
+        user.name = document.getElementById('settingName').value.trim() || user.name;
+        user.age = parseInt(document.getElementById('settingAge').value) || user.age;
+        user.dailyTarget = parseInt(document.getElementById('settingDailyTarget').value) || user.dailyTarget;
+        user.weeklyTarget = parseInt(document.getElementById('settingWeeklyTarget').value) || user.weeklyTarget;
+        
+        AppState.save();
+        AppState.applyTheme();
+        UI.renderDashboard();
+        AppState.showToast('Pengaturan disimpan', 'success');
+    },
+
+    // Reset all data
+    resetData() {
+        if (!confirm('Yakin ingin menghapus SEMUA data? Tindakan ini tidak bisa dibatalkan.')) return;
+        localStorage.removeItem(CONFIG.STORAGE_KEY);
+        location.reload();
+    },
+
+    // Export data
+    exportData() {
+        const dataStr = JSON.stringify(AppState.data, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `life-quest-rpg-backup-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        AppState.showToast('Data diexport', 'success');
+    },
+
+    // Import data
+    importData(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                AppState.data = data;
+                AppState.migrateData();
+                AppState.save();
+                AppState.applyTheme();
+                UI.navigateTo('dashboard');
+                AppState.showToast('Data diimport berhasil', 'success');
+            } catch (err) {
+                AppState.showToast('File tidak valid', 'error');
+            }
+        };
+        reader.readAsText(file);
+    }
+};
+
+// ============================================
+// EVENT LISTENERS
+// ============================================
+function initEventListeners() {
+    // Navigation
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            UI.navigateTo(item.dataset.page);
+        });
+    });
+
+    // Mobile menu
+    document.getElementById('menuToggle').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.add('open');
+        document.getElementById('sidebarOverlay').classList.add('active');
+    });
+
+    document.getElementById('closeSidebar').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('sidebarOverlay').classList.remove('active');
+    });
+
+    document.getElementById('sidebarOverlay').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('sidebarOverlay').classList.remove('active');
+    });
+
+    // Modal close
+    document.getElementById('modalClose').addEventListener('click', UI.closeModal);
+    document.querySelector('.modal-overlay').addEventListener('click', UI.closeModal);
+
+    // FAB
+    document.getElementById('fab').addEventListener('click', () => {
+        switch (AppState.currentPage) {
+            case 'roadmap': Actions.addRoadmap(); break;
+            case 'missions': Actions.addMission(); break;
+            case 'schedule': AppState.showToast('Gunakan tombol + di setiap hari', 'info'); break;
+            default: AppState.showToast('Pilih halaman Roadmap atau Misi untuk menambah', 'info');
+        }
+    });
+
+    // Mission tabs
+    document.querySelectorAll('.mission-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.mission-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.mission-tab-content').forEach(c => c.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById(`${tab.dataset.tab}Missions`).classList.add('active');
+        });
+    });
+
+    // Settings
+    document.getElementById('btnSaveSettings').addEventListener('click', Actions.saveSettings);
+
+    document.querySelectorAll('.theme-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.theme-option').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            AppState.data.user.theme = btn.dataset.theme;
+            AppState.applyTheme();
+        });
+    });
+
+    document.querySelectorAll('.accent-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.accent-option').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            AppState.data.user.accent = btn.dataset.accent;
+            AppState.applyTheme();
+        });
+    });
+
+    document.getElementById('btnResetData').addEventListener('click', Actions.resetData);
+    document.getElementById('btnExportData').addEventListener('click', Actions.exportData);
+    document.getElementById('btnImportData').addEventListener('click', () => {
+        document.getElementById('importFileInput').click();
+    });
+    document.getElementById('importFileInput').addEventListener('change', (e) => {
+        if (e.target.files[0]) Actions.importData(e.target.files[0]);
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') UI.closeModal();
+    });
+
+    // Window resize for charts
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            if (AppState.currentPage === 'stats') UI.renderStats();
+        }, 250);
+    });
+}
+
+// ============================================
+// INITIALIZATION
+// ============================================
+function init() {
+    AppState.load();
+    initEventListeners();
+    UI.navigateTo('dashboard');
+    
+    // Check achievements on load
+    AppState.checkAchievements();
+}
+
+// Start app when DOM ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}
